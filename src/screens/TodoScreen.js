@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
+  Switch,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { IconButton } from "react-native-paper";
@@ -12,12 +13,11 @@ import { IconButton } from "react-native-paper";
 const TodoScreen = () => {
   const [todolist, setTodolist] = useState([]);
   const [todo, setTodo] = useState("");
-  const [content, setContent] = useState("");
-  const [isCompleted, setComplete] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
 
   const getAllTodoItems = async () => {
     const res = await fetch(
-      "https://c41c-39-45-0-136.ngrok-free.app/api/todo/gets"
+      "https://583e-39-45-21-37.ngrok-free.app/api/todo/gets"
     )
       .then((response) => response.json())
       .catch((error) => {
@@ -36,10 +36,10 @@ const TodoScreen = () => {
 
   handleAddTodo = async () => {
     const body = {
-      title: todo
+      title: todo,
+      isCompleted: isComplete
     }
-    console.log(body)
-    const res = await fetch("https://c41c-39-45-0-136.ngrok-free.app/api/todo/create", {
+    const res = await fetch("https://583e-39-45-21-37.ngrok-free.app/api/todo/create", {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -54,10 +54,9 @@ const TodoScreen = () => {
             "Response Body -> " + JSON.stringify(responseData)
         )
     })
-    console.log(res);
   }
 
-  const renderTodos = ({ item, index }) => {
+    renderTodos = ({ item, index }) => {
     return (
       <View
         style={styles.list}
@@ -82,6 +81,8 @@ const TodoScreen = () => {
     );
   };
 
+  const toggleSwitch = () => setIsComplete(previousState => !previousState);
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -90,11 +91,13 @@ const TodoScreen = () => {
         value={todo}
         onChangeText={(userText) => setTodo(userText)}
       />
-      <TextInput
-        style={styles.inputField}
-        placeholder="Add a content" 
-        value={content}
-        onChangeText={(userText) => setContent(userText)}
+
+      <Switch
+        trackColor={{false: '#767577', true: '#81b0ff'}}
+        thumbColor={isComplete ? '#f5dd4b' : '#f4f3f4'}
+        ios_backgroundColor="#3e3e3e"
+        onValueChange={toggleSwitch}
+        value={isComplete}
       />
 
       <TouchableOpacity style={styles.addButton} onPress={() => handleAddTodo()}>
