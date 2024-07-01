@@ -9,15 +9,17 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { IconButton } from "react-native-paper";
+import axios from "axios";
 
 const TodoScreen = () => {
   const [todolist, setTodolist] = useState([]);
   const [todo, setTodo] = useState("");
   const [isComplete, setIsComplete] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
   const getAllTodoItems = async () => {
     const res = await fetch(
-      "https://583e-39-45-21-37.ngrok-free.app/api/todo/gets"
+      "https://91a9-2407-aa80-116-6536-e345-28d4-1f9a-ecfe.ngrok-free.app/api/todo/gets"
     )
       .then((response) => response.json())
       .catch((error) => {
@@ -34,27 +36,37 @@ const TodoScreen = () => {
     fetchlist();
   }, []);
 
-  handleAddTodo = async () => {
-    const body = {
-      title: todo,
-      isCompleted: isComplete
+    handleAddTodo = async () => {
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      
+      const raw = JSON.stringify([
+        {
+          "title": todo,
+          "isCompleted": isComplete
+        }
+      ]);
+      
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow"
+      };
+      
+      try {
+       fetch("https://91a9-2407-aa80-116-6536-e345-28d4-1f9a-ecfe.ngrok-free.app/api/todo/create", requestOptions)
+       getAllTodoItems();
+      } catch (error) {
+        console.error(error);
+      }
     }
-    const res = await fetch("https://583e-39-45-21-37.ngrok-free.app/api/todo/create", {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-  })
 
-    .then((response) => response.json())
-    .then((responseData) => {
-        console.log(
-            "POST Response",
-            "Response Body -> " + JSON.stringify(responseData)
-        )
-    })
-  }
+    handleDeleteTodo = async (id) => {
+      const res = await fetch(`https://91a9-2407-aa80-116-6536-e345-28d4-1f9a-ecfe.ngrok-free.app/api/todo/delete/${id}`,{
+        method: 'DELETE'
+      })
+    } 
 
     renderTodos = ({ item, index }) => {
     return (
@@ -83,6 +95,10 @@ const TodoScreen = () => {
 
   const toggleSwitch = () => setIsComplete(previousState => !previousState);
 
+  const refreshList = async () => {
+    setRefresh(false)
+  }
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -106,7 +122,7 @@ const TodoScreen = () => {
         </Text>
       </TouchableOpacity>
 
-      <FlatList data={todolist} renderItem={renderTodos} />
+      <FlatList data={todolist} renderItem={renderTodos} onRefresh={refreshList} refreshing= {refresh} />
     </View>
   );
 };
