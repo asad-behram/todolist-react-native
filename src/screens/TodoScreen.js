@@ -9,13 +9,11 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { IconButton } from "react-native-paper";
-import axios from "axios";
 
 const TodoScreen = () => {
   const [todolist, setTodolist] = useState([]);
   const [todo, setTodo] = useState("");
   const [isComplete, setIsComplete] = useState(false);
-  const [refresh, setRefresh] = useState(false);
 
   const getAllTodoItems = async () => {
     const res = await fetch(
@@ -68,6 +66,33 @@ const TodoScreen = () => {
       })
     } 
 
+    handleUpdateTodo = async (item) => {
+      console.log(item)
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      
+      const raw = JSON.stringify([
+        {
+          "isCompleted": !item.isCompleted
+        }
+      ]);
+      
+      const requestOptions = {
+        method: "PUT",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow"
+      };
+      
+      try {
+        console.log("RO: " ,requestOptions)
+       const res = await fetch(`https://91a9-2407-aa80-116-6536-e345-28d4-1f9a-ecfe.ngrok-free.app/api/todo/update/${item.id}`, requestOptions)
+       console.log("RES: ", res)
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
     renderTodos = ({ item, index }) => {
     return (
       <View
@@ -80,9 +105,9 @@ const TodoScreen = () => {
         </Text>
 
         <IconButton
-          icon="pencil"
-          iconColor="#fff"
-          onPress={() => handleEditTodo(item)}
+          icon="check"
+          iconColor= {item.isCompleted ? "#0eff00" : "#fff"}
+          onPress={() => handleUpdateTodo(item)}
         />
         <IconButton
           icon="trash-can"
@@ -94,10 +119,6 @@ const TodoScreen = () => {
   };
 
   const toggleSwitch = () => setIsComplete(previousState => !previousState);
-
-  const refreshList = async () => {
-    setRefresh(false)
-  }
 
   return (
     <View style={styles.container}>
@@ -122,7 +143,7 @@ const TodoScreen = () => {
         </Text>
       </TouchableOpacity>
 
-      <FlatList data={todolist} renderItem={renderTodos} onRefresh={refreshList} refreshing= {refresh} />
+      <FlatList data={todolist} renderItem={renderTodos} />
     </View>
   );
 };
@@ -140,6 +161,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
+  },
+  deleteButton: {
+    marginLeft: 15
+  },
+  completeButton: {
+
   },
   addButton: {
     backgroundColor: "#000",
