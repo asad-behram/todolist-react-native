@@ -9,15 +9,17 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { IconButton } from "react-native-paper";
+import { AppURL } from "../enums/AppURL";
 
 const TodoScreen = () => {
   const [todolist, setTodolist] = useState([]);
   const [todo, setTodo] = useState("");
   const [isComplete, setIsComplete] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const getAllTodoItems = async () => {
     const res = await fetch(
-      "https://91a9-2407-aa80-116-6536-e345-28d4-1f9a-ecfe.ngrok-free.app/api/todo/gets"
+      AppURL.url + "/gets"
     )
       .then((response) => response.json())
       .catch((error) => {
@@ -34,88 +36,88 @@ const TodoScreen = () => {
     fetchlist();
   }, []);
 
-    handleAddTodo = async () => {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      
-      const raw = JSON.stringify([
-        {
-          "title": todo,
-          "isCompleted": isComplete
-        }
-      ]);
-      
-      const requestOptions = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow"
-      };
-      
-      try {
-       fetch("https://91a9-2407-aa80-116-6536-e345-28d4-1f9a-ecfe.ngrok-free.app/api/todo/create", requestOptions)
-       getAllTodoItems();
-      } catch (error) {
-        console.error(error);
+  handleAddTodo = async () => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    
+    const raw = JSON.stringify([
+      {
+        "title": todo,
+        "isCompleted": isComplete
       }
+    ]);
+    
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow"
+    };
+    
+    try {
+      fetch(AppURL.url+"/create", requestOptions)
+      await getAllTodoItems();
+    } catch (error) {
+      console.error(error);
     }
+  }
 
-    handleDeleteTodo = async (id) => {
-      const res = await fetch(`https://91a9-2407-aa80-116-6536-e345-28d4-1f9a-ecfe.ngrok-free.app/api/todo/delete/${id}`,{
-        method: 'DELETE'
-      })
-    } 
+  handleDeleteTodo = async (id) => {
+    const res = await fetch(`${AppURL.url}/delete/${id}`,{
+      method: 'DELETE'
+    })
+  } 
 
-    handleUpdateTodo = async (item) => {
-      console.log(item)
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      
-      const raw = JSON.stringify([
-        {
-          "isCompleted": !item.isCompleted
-        }
-      ]);
-      
-      const requestOptions = {
-        method: "PUT",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow"
-      };
-      
-      try {
-        console.log("RO: " ,requestOptions)
-       const res = await fetch(`https://91a9-2407-aa80-116-6536-e345-28d4-1f9a-ecfe.ngrok-free.app/api/todo/update/${item.id}`, requestOptions)
-       console.log("RES: ", res)
-      } catch (error) {
-        console.error(error);
-      }
-    }
+  handleUpdateTodo = async (item) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
 
-    renderTodos = ({ item, index }) => {
-    return (
-      <View
-        style={styles.list}
+    const raw = JSON.stringify({
+      "isCompleted": item.isCompleted
+    });
+
+    const requestOptions = {
+      method: "PUT",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow"
+    };
+
+    fetch(`${AppURL.url}/update/${item.id}`, requestOptions)
+      .then((result) => console.log(result))
+      .catch((error) => console.error(error));
+  }
+
+  handleRefresh = async () => {
+    setRefreshing(true);
+    const data = await getAllTodoItems();
+    setTodolist(data);
+    setRefreshing(false)
+  }
+
+  renderTodos = ({ item, index }) => {
+  return (
+    <View
+      style={styles.list}
+    >
+      <Text
+        style={styles.todoItem}
       >
-        <Text
-          style={styles.todoItem}
-        >
-          {item.title}
-        </Text>
+        {item.title}
+      </Text>
 
-        <IconButton
-          icon="check"
-          iconColor= {item.isCompleted ? "#0eff00" : "#fff"}
-          onPress={() => handleUpdateTodo(item)}
-        />
-        <IconButton
-          icon="trash-can"
-          iconColor="#fff"
-          onPress={() => handleDeleteTodo(item.id)}
-        />
-      </View>
-    );
+      <IconButton
+        icon="check"
+        iconColor= {item.isCompleted ? "#0eff00" : "#fff"}
+        onPress={() => handleUpdateTodo(item)}
+      />
+      <IconButton
+        icon="trash-can"
+        iconColor="#fff"
+        onPress={() => handleDeleteTodo(item.id)}
+      />
+    </View>
+  );
   };
 
   const toggleSwitch = () => setIsComplete(previousState => !previousState);
@@ -143,7 +145,13 @@ const TodoScreen = () => {
         </Text>
       </TouchableOpacity>
 
-      <FlatList data={todolist} renderItem={renderTodos} />
+      <FlatList 
+        data={todolist} 
+        renderItem={renderTodos} 
+        refreshing={refreshing} 
+        onRefresh={handleRefresh} 
+        showsVerticalScrollIndicator={true}
+      />
     </View>
   );
 };
