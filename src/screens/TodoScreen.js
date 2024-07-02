@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   Switch,
+  Image
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { IconButton } from "react-native-paper";
@@ -124,6 +125,13 @@ const TodoScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style= {styles.headerContainer}>
+        <Image
+          style={styles.todologo}
+          source={require('../../assets/todoIcon.png')}
+        />
+        <Text style={styles.header}>TODOLIST</Text>
+      </View>
       <TextInput
         style={styles.inputField}
         placeholder="Add a title" 
@@ -132,8 +140,8 @@ const TodoScreen = () => {
       />
 
       <Switch
-        trackColor={{false: '#767577', true: '#81b0ff'}}
-        thumbColor={isComplete ? '#f5dd4b' : '#f4f3f4'}
+        trackColor={{false: '#767577', true: '#141f38'}}
+        thumbColor={isComplete ? '#fff' : '#f4f3f4'}
         ios_backgroundColor="#3e3e3e"
         onValueChange={toggleSwitch}
         value={isComplete}
@@ -163,9 +171,24 @@ const styles = StyleSheet.create({
     marginHorizontal: 16, 
     marginTop: 40 
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: "center"
+  },
+  todologo: {
+    width: 50,
+    height: 50,
+    marginBottom: 25,
+  },
+  header: {
+    fontSize: 45,
+    marginBottom: 10,
+    color: "#141f38"
+  },
   inputField: {
     borderWidth: 2,
-    borderColor: "#000",
+    borderColor: "#141f38",
     borderRadius: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -173,14 +196,11 @@ const styles = StyleSheet.create({
   deleteButton: {
     marginLeft: 15
   },
-  completeButton: {
-
-  },
   addButton: {
-    backgroundColor: "#000",
+    backgroundColor: "#141f38",
     borderRadius: 6,
     paddingVertical: 12,
-    marginVertical: 34,
+    marginBottom: 34,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
