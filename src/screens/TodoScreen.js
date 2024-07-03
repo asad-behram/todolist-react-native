@@ -57,16 +57,25 @@ const TodoScreen = () => {
     
     try {
       fetch(AppURL.url+"/create", requestOptions)
-      await getAllTodoItems();
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsComplete(false)
+      setTodo("");
+      handleRefresh();
     }
   }
 
   handleDeleteTodo = async (id) => {
-    const res = await fetch(`${AppURL.url}/delete/${id}`,{
-      method: 'DELETE'
-    })
+    try {
+      const res = await fetch(`${AppURL.url}/delete/${id}`,{
+        method: 'DELETE'
+      })
+    } catch (error) {
+      console.log(error)
+    } finally {
+      handleRefresh();
+    }
   } 
 
   handleUpdateTodo = async (item) => {
@@ -74,7 +83,7 @@ const TodoScreen = () => {
     myHeaders.append("Content-Type", "application/json");
 
     const raw = JSON.stringify({
-      "isCompleted": item.isCompleted
+      "isCompleted": !item.isCompleted
     });
 
     const requestOptions = {
@@ -84,9 +93,13 @@ const TodoScreen = () => {
       redirect: "follow"
     };
 
-    fetch(`${AppURL.url}/update/${item.id}`, requestOptions)
-      .then((result) => console.log(result))
-      .catch((error) => console.error(error));
+    try {
+      fetch(`${AppURL.url}/update/${item.id}`, requestOptions)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      handleRefresh();
+    }
   }
 
   handleRefresh = async () => {
@@ -109,7 +122,7 @@ const TodoScreen = () => {
 
       <IconButton
         icon="check"
-        iconColor= {item.isCompleted ? "#0eff00" : "#fff"}
+        iconColor= {item.isCompleted ? "#141f38" : "#fff"}
         onPress={() => handleUpdateTodo(item)}
       />
       <IconButton
